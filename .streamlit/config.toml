@@ -1,0 +1,35 @@
+[server]
+enableStaticServing = true
+
+[[theme.fontFaces]]
+family = "Michroma"
+url = "app/static/Michroma-Regular.ttf"
+
+[[theme.fontFaces]]
+family = "Space Grotesk"
+url = "app/static/SpaceGrotesk-VariableFont_wght.ttf"
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Space Grotesk"
+url = "app/static/SpaceGrotesk-VariableFont_wght.ttf"
+style = "italic"
+
+[[theme.fontFaces]]
+family = "Space Grotesk"
+url = "app/static/SpaceGrotesk-VariableFont_wght.ttf"
+style = "bold"
+
+[[theme.fontFaces]]
+family = "Share Tech Mono"
+url = "app/static/ShareTechMono-Regular.ttf"
+style = "bold"
+
+[theme]
+primaryColor = "#FF9900"              # Accretion Disk Gold
+backgroundColor = "#030712"           # Deep Space Black
+secondaryBackgroundColor = "#0B0F19" # Stellar Nebula Container
+textColor = "#E2E8F0"                 # Starlight White
+headingFont = "Michroma"
+font = "Space Grotesk"
+codeFont = "Share Tech Mono"

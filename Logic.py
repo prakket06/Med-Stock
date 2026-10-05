@@ -88,3 +88,10 @@ def get_whatsapp_link(phone_number):
     encoded_msg = urllib.parse.quote(msg)
     whatsapp_url = f"https://api.whatsapp.com/send?phone={phone_number}&text={encoded_msg}"
     return whatsapp_url, msg
+
+def reduce_stock():
+	df = view_stock()
+	df["Tablets Left"] = df["Tablets Left"] - df["Dose"]
+	df["Tablets Left"] = df["Tablets Left"].apply(lambda x: max(x, 0))  # Ensure no negative values
+	df["Days Left"] = df["Tablets Left"] / df["Dose"]
+	df.to_csv("Med Stock.csv", index = False, header = False)

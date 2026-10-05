@@ -1,9 +1,9 @@
 from datetime import datetime
 
 import streamlit as st
-from Logic import check_med, view_stock, add_med, remove_med, update_stock, check_expiry, get_whatsapp_link
+from Logic import check_med, view_stock, add_med, remove_med, update_stock, check_expiry, get_whatsapp_link, reduce_stock
 
-st.set_page_config(page_title = "Medicine Stock App", page_icon = "💊", layout = "wide")
+st.set_page_config(page_title = "Medicine Stock App", page_icon = "💊", layout = "wide", initial_sidebar_state = "expanded")
 
 st.markdown(
     """
@@ -46,14 +46,13 @@ st.markdown(
         font-family: 'Share Tech Mono', monospace !important;
     }
 
-    /* 3. TABS STYLING (GLASSMORPHISM NEBULA LOOK) */
+    /* 3. TABS STYLING */
     .stTabs [aria-selected="true"] {
-        background: rgba(15, 23, 42, 0.75) !important;
+        background: transparent !important;
         color: #FF9900 !important;
         border-bottom: 2px solid #FF9900 !important;
         font-family: 'Michroma', sans-serif !important;
         font-size: 0.85rem !important;
-        backdrop-filter: blur(8px);
     }
 
     .stTabs button {
@@ -62,22 +61,21 @@ st.markdown(
         font-weight: 600;
     }
 
-    /* 4. TEXT INPUTS & CARDS (GLASSMORPHISM CARDS) */
+    /* 4. TEXT INPUTS & NUMBER INPUTS (CLEAN NEBULA BORDER) */
     div[data-testid="stTextInput"] input, 
     div[data-testid="stNumberInput"] input,
     div[data-testid="stDateInput"] input {
-        background-color: rgba(11, 14, 20, 0.0) !important;
+        background-color: #0B0E14 !important;
         color: #F8FAFC !important;
-        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        border: 1px solid rgba(168, 85, 247, 0.35) !important;
         border-radius: 8px !important;
-        backdrop-filter: blur(6px) !important;
     }
 
     div[data-testid="stTextInput"] input:focus, 
     div[data-testid="stNumberInput"] input:focus,
     div[data-testid="stDateInput"] input:focus {
         border-color: #00F0FF !important;
-        box-shadow: 0 0 15px rgba(0, 240, 255, 0.4) !important;
+        box-shadow: 0 0 12px rgba(0, 240, 255, 0.4) !important;
     }
 
     /* 5. PRIMARY BUTTON (ACCRETION DISK ROTATION HOVER) */
@@ -159,30 +157,114 @@ st.markdown(
         transform: translateY(-2px) !important;
         box-shadow: 0 0 20px rgba(255, 153, 0, 0.6) !important;
     }
+
+    /* ---------------- ALERT BOXES (NEBULA SHADES & GLOW) ---------------- */
+
+    /* Base Alert Box Styling */
+    div[data-testid="stAlert"] {
+        border-radius: 12px !important;
+        padding: 12px 18px !important;
+        backdrop-filter: blur(10px) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    /* 1. SUCCESS (Green Box & Bright Green Text) */
+    div[data-testid="stAlert"]:has(div[data-testid="stAlertContentSuccess"]),
+    div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconSuccess"]) {
+        background-color: rgba(6, 78, 59, 0.45) !important;
+        border: 1px solid #059669 !important;
+        box-shadow: 0 4px 20px rgba(5, 150, 105, 0.25) !important;
+    }
+    div[data-testid="stAlert"]:has(div[data-testid="stAlertContentSuccess"]) p,
+    div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconSuccess"]) p,
+    div[data-testid="stAlert"]:has(div[data-testid="stAlertContentSuccess"]) svg,
+    div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconSuccess"]) svg {
+        color: #34D399 !important;
+        fill: #34D399 !important;
+    }
+
+    /* 2. WARNING (Amber/Gold Box & Gold Text) */
+    div[data-testid="stAlert"]:has(div[data-testid="stAlertContentWarning"]),
+    div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconWarning"]) {
+        background-color: rgba(120, 53, 15, 0.45) !important;
+        border: 1px solid #D97706 !important;
+        box-shadow: 0 4px 20px rgba(217, 119, 6, 0.25) !important;
+    }
+    div[data-testid="stAlert"]:has(div[data-testid="stAlertContentWarning"]) p,
+    div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconWarning"]) p,
+    div[data-testid="stAlert"]:has(div[data-testid="stAlertContentWarning"]) svg,
+    div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconWarning"]) svg {
+        color: #FBBF24 !important;
+        fill: #FBBF24 !important;
+    }
+
+    /* 3. ERROR (Crimson Box & Soft Red Text) */
+    div[data-testid="stAlert"]:has(div[data-testid="stAlertContentError"]),
+    div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconError"]) {
+        background-color: rgba(127, 29, 29, 0.45) !important;
+        border: 1px solid #DC2626 !important;
+        box-shadow: 0 4px 20px rgba(220, 38, 38, 0.25) !important;
+    }
+    div[data-testid="stAlert"]:has(div[data-testid="stAlertContentError"]) p,
+    div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconError"]) p,
+    div[data-testid="stAlert"]:has(div[data-testid="stAlertContentError"]) svg,
+    div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconError"]) svg {
+        color: #FCA5A5 !important;
+        fill: #FCA5A5 !important;
+    }
+
+    /* 4. INFO (Deep Cyan Box & Bright Cyan Text) */
+    div[data-testid="stAlert"]:has(div[data-testid="stAlertContentInfo"]),
+    div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconInfo"]) {
+        background-color: rgba(22, 78, 99, 0.45) !important;
+        border: 1px solid #0891B2 !important;
+        box-shadow: 0 4px 20px rgba(8, 145, 178, 0.25) !important;
+    }
+    div[data-testid="stAlert"]:has(div[data-testid="stAlertContentInfo"]) p,
+    div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconInfo"]) p,
+    div[data-testid="stAlert"]:has(div[data-testid="stAlertContentInfo"]) svg,
+    div[data-testid="stAlert"]:has(svg[data-testid="stNotificationIconInfo"]) svg {
+        color: #22D3EE !important;
+        fill: #22D3EE !important;
+    }
+
+    /* Code block inside Alert styling */
+    div[data-testid="stAlert"] code {
+        background-color: rgba(3, 7, 18, 0.7) !important;
+        border-radius: 4px;
+        padding: 0.15rem 0.4rem;
+        font-weight: 700;
+    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["View Stock", "Add Medicine", "Remove Medicine", "Update Stock", "Send Message"])
+st.sidebar.title("💊 Medicine Stock App")
+st.sidebar.markdown("Should the daily stock be reduced right now?")
+if st.sidebar.button("Yes, Reduce Stock", type = "primary"):
+    st.sidebar.success("Stock reduced successfully!")
+    # Call the reduce_stock function from Logic.py
+    reduce_stock()
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["View Stock", "Add Medicine", "Remove Medicine", "Update Stock", "Skipped Medicines","Send Message"])
 
 with tab1:
     st.header("View Stock")
     st.dataframe(view_stock(), width = "stretch", hide_index = True)
-    st.subheader("📋 Medicines that are expired:")
+    st.subheader("📋 Medicines that are expired or expiring soon:")
     if check_expiry() is not None:
         expired_meds, expiring_in_10_days, expiring_in_30_days = check_expiry()
         if expired_meds is not None and len(expired_meds) > 0:
-            st.write("Expired Medicines:")
+            st.error("Expired Medicines:")
             st.write(expired_meds)
         if expiring_in_10_days is not None and len(expiring_in_10_days) > 0:
-            st.write("Expiring in 10 Days:")
+            st.warning("Expiring in 10 Days:")
             st.write(expiring_in_10_days)
         if expiring_in_30_days is not None and len(expiring_in_30_days) > 0:
-            st.write("Expiring in 30 Days:")
+            st.info("Expiring in 30 Days:")
             st.write(expiring_in_30_days)
     else:
-        st.success("No medicines expired or expiring soon.")
+        st.success("No medicines expired or expiring soon.", icon = "🟢")
 
 with tab2:
     st.header("Add Medicine")
@@ -209,14 +291,14 @@ with tab2:
                 if med_name and med_tablets and med_dose > 0 and med_expiry:
                     med_added = add_med(med_name, med_tablets, med_dose, med_days, med_expiry)
                     if med_added:
-                        st.success(f"{med_name} added successfully!")
+                        st.success(f"{med_name} added successfully!", icon = "🟢")
                         st.session_state.add_med = False
                     else:
-                        st.error(f"Failed to add {med_name}.")
+                        st.error(f"Failed to add {med_name}.", icon = "🔴")
                 else:
-                    st.warning("Please fill in all the fields correctly.")
+                    st.warning("Please fill in all the fields correctly.", icon = "🟡")
         else:
-            st.warning(f"{med_name} already exists in stock. Please use the Update Stock tab to modify it.")
+            st.info(f"{med_name} already exists in stock. Please use the Update Stock tab to modify it.", icon = "ℹ️")
 
 with tab3:
     st.header("Remove Medicine")
@@ -226,13 +308,13 @@ with tab3:
             if check_med(med_name_remove):
                 med_removed = remove_med(med_name_remove)
                 if med_removed == True:
-                    st.success(f"{med_name_remove} removed successfully!")
+                    st.success(f"{med_name_remove} removed successfully!", icon = "🟢")
                 else:
-                    st.error(med_removed)
+                    st.error(med_removed, icon = "🔴")
             else:
-                st.warning(f"{med_name_remove} not found in stock.")
+                st.info(f"{med_name_remove} not found in stock.", icon = "ℹ️")
         else:
-            st.warning("Please enter the name of the medicine to remove.")
+            st.warning("Please enter the name of the medicine to remove.", icon = "🟡")
 
 with tab4:
     st.header("Update Stock")
@@ -247,7 +329,7 @@ with tab4:
         if med_name_update:
             st.session_state.update_med = True
         else:
-            st.warning("Please enter the name of the medicine to search.")
+            st.warning("Please enter the name of the medicine to search.", icon = "🟡")
 
     if st.session_state.update_med and med_name_update:
         if check_med(med_name_update):
@@ -266,16 +348,64 @@ with tab4:
                     new_days = new_tablets / new_dose
                     update_successful = update_stock(med_name_update, new_tablets, new_days, new_dose, new_expiry)
                     if update_successful:
-                        st.success(f"{med_name_update} updated successfully!")
+                        st.success(f"{med_name_update} updated successfully!", icon = "🟢")
                         st.session_state.update_med = False  # Reset state after update
                     else:
-                        st.error(f"Failed to update {med_name_update}.")
+                        st.error(f"Failed to update {med_name_update}.", icon = "🔴")
                 else:
-                    st.warning("Please fill in all the fields correctly.")
+                    st.warning("Please fill in all the fields correctly.", icon = "🟡")
         else:
-            st.warning(f"'{med_name_update}' not found in stock.")
+            st.info(f"'{med_name_update}' not found in stock.", icon = "ℹ️")
 
 with tab5:
+    st.header("Skipped Medicines")
+
+    df = view_stock()
+    med_list = df["Name"].tolist()
+
+    # 1. Select kon-kon si medicines miss hui
+    selected_skipped_meds = st.multiselect(
+        "Skipped medicines?",
+        options=med_list,
+        placeholder="Select skipped medicines..."
+    )
+
+    if selected_skipped_meds:
+        st.subheader("📋 Missed Doses Adjustment")
+        skipped_data = {}
+
+        # 2. Selected medicines ke liye dynamic input fields
+        cols = st.columns(len(selected_skipped_meds)) if len(selected_skipped_meds) <= 3 else [st.container()]
+        
+        # Grid layout for inputs
+        for idx, med_name in enumerate(selected_skipped_meds):
+            # Fetch default dose for this med
+            default_dose = float(df.loc[df["Name"] == med_name, "Dose"].values[0])
+            
+            with st.container(border=True):
+                st.write(f"**{med_name}**")
+                tablets_skipped = st.number_input(f"No. of tablets skipped: ({med_name})", min_value=0.001, value=default_dose, step=0.5, key=f"skip_{med_name}")
+                skipped_data[med_name] = tablets_skipped
+
+        # 3. Confirm Button
+        if st.button("Log Skipped Doses (Add Back to Stock)", type="primary"):
+            for med_name, qty in skipped_data.items():
+                # Stock me quantity add back karne ka logic
+                current_tablets = df.loc[df["Name"] == med_name, "Tablets Left"].values[0]
+                current_dose = df.loc[df["Name"] == med_name, "Dose"].values[0]
+                current_expiry = datetime.strptime(df.loc[df["Name"] == med_name, "Expiry Date"].values[0], "%d-%m-%y")
+                
+                new_tablets = current_tablets + qty
+                new_days = new_tablets / current_dose
+                
+                update_stock(med_name, new_tablets, new_days, current_dose, current_expiry)
+                
+            st.success("Skipped doses added back to stock! 🎉", icon = "🟢")
+            st.rerun()
+    else:
+        st.info("No skipped medicines selected.", icon = "ℹ️")
+
+with tab6:
     st.header("📨 Send Refill Reminder to Mummy")
     st.markdown("Automated trigger to send low stock medicine list via WhatsApp.")
     
@@ -290,4 +420,4 @@ with tab5:
         # Link button to open WhatsApp directly with pre-filled text
         st.link_button("🟢 Open WhatsApp & Send Message", link, width = "stretch")
     else:
-        st.success("🎉 All medicines have sufficient stock! No refill needed right now.")
+        st.success("🎉 All medicines have sufficient stock! No refill needed right now.", icon = "🟢")

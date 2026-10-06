@@ -30,7 +30,7 @@ st.markdown(
         background-attachment: fixed !important;
     }
 
-    html, body, [class*="st-"] {
+    html, body {
         font-family: 'Space Grotesk', sans-serif !important;
         color: #E2E8F0 !important;
     }
@@ -302,60 +302,67 @@ with tab2:
 
 with tab3:
     st.header("Remove Medicine")
-    med_name_remove = st.text_input("Enter the name of the medicine to remove:")
-    if st.button("Remove Medicine", type = "primary"):
-        if med_name_remove:
-            if check_med(med_name_remove):
-                med_removed = remove_med(med_name_remove)
-                if med_removed == True:
-                    st.success(f"{med_name_remove} removed successfully!", icon = "🟢")
+    df = view_stock()
+    med_list = df["Name"].tolist()
+    med_name_remove = st.multiselect("Select the medicine(s) to remove:", options=med_list, placeholder="Select medicine(s)...")
+
+    if med_name_remove:
+        if st.button("Confirm Remove", type = "primary"):
+            for med_name in med_name_remove:
+                remove_successful = remove_med(med_name)
+                if remove_successful:
+                    st.success(f"{med_name} removed successfully!", icon = "🟢")
                 else:
-                    st.error(med_removed, icon = "🔴")
-            else:
-                st.info(f"{med_name_remove} not found in stock.", icon = "ℹ️")
-        else:
-            st.warning("Please enter the name of the medicine to remove.", icon = "🟡")
+                    st.error(f"Failed to remove {med_name}.", icon = "🔴")
 
 with tab4:
     st.header("Update Stock")
-
-    if "update_med" not in st.session_state:
-        st.session_state.update_med = False
-
     df = view_stock()
-    med_name_update = st.text_input("Enter the name of the medicine to update:")
+    med_list = df["Name"].tolist()
+    update_data = {}
+    # 1. Select kon-kon si medicines miss hui
+    med_name_update = st.multiselect(
+        "Select medicines to update:",
+        options=med_list,
+        placeholder="Select medicines..."
+    )
 
-    if st.button("Search Medicine", type = "primary"):
-        if med_name_update:
-            st.session_state.update_med = True
-        else:
-            st.warning("Please enter the name of the medicine to search.", icon = "🟡")
+    if med_name_update:
+        st.subheader("📋 Update Stock")
+        update_data = {}
 
-    if st.session_state.update_med and med_name_update:
-        if check_med(med_name_update):
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                new_tablets = st.number_input("Number of Tablets You Bought:", min_value=0.0, step=0.5)
-            with col2:
-                new_dose = st.number_input("New Dose of Medicine (minimum 0.001):", min_value=0.001, step=0.001)
-            with col3:
-                new_expiry = st.date_input("New Expiry Date:", min_value = datetime.now().date())
+        # 2. Selected medicines ke liye dynamic input fields
+        cols = st.columns(len(med_name_update)) if len(med_name_update) <= 3 else [st.container()]
+        
+        # Grid layout for inputs
+        for idx, med_name in enumerate(med_name_update):
+            # Fetch default dose for this med
+            tablets_left = float(df.loc[df["Name"] == med_name, "Tablets Left"].values[0])
+            dose = float(df.loc[df["Name"] == med_name, "Dose"].values[0])
 
-            new_tablets += df.loc[df["Name"] == med_name_update, "Tablets Left"].values[0]
+            with st.container(border=True):
+                st.write(f"**{med_name}**")
+                tablets_bought = st.number_input(f"No. of tablets bought: ({med_name})", min_value=0.001, value = tablets_left, step=0.5, key=f"buy_{med_name}")
+                new_dose = st.number_input(f"New Dose of Medicine (minimum 0.001): ({med_name})", min_value=0.001, value=dose, step=0.001, key=f"dose_{med_name}")
+                new_expiry = st.date_input(f"New Expiry Date: ({med_name})", min_value = datetime.now().date(), key=f"expiry_{med_name}")
+                update_data[med_name] = [tablets_bought, new_dose, new_expiry]
 
-            if st.button("Confirm Update", type = "primary"):
-                if new_tablets > 0 and new_dose > 0 and new_expiry:
-                    new_days = new_tablets / new_dose
-                    update_successful = update_stock(med_name_update, new_tablets, new_days, new_dose, new_expiry)
-                    if update_successful:
-                        st.success(f"{med_name_update} updated successfully!", icon = "🟢")
-                        st.session_state.update_med = False  # Reset state after update
-                    else:
-                        st.error(f"Failed to update {med_name_update}.", icon = "🔴")
-                else:
-                    st.warning("Please fill in all the fields correctly.", icon = "🟡")
-        else:
-            st.info(f"'{med_name_update}' not found in stock.", icon = "ℹ️")
+        # 3. Confirm Button
+        if st.button("Update Stock", type="primary"):
+            for med_name, qty in update_data.items():
+                # Stock me quantity add back karne ka logic
+                current_tablets = df.loc[df["Name"] == med_name, "Tablets Left"].values[0]
+                current_dose = df.loc[df["Name"] == med_name, "Dose"].values[0]
+                current_expiry = datetime.strptime(df.loc[df["Name"] == med_name, "Expiry Date"].values[0], "%d-%m-%y")
+                
+                new_tablets = current_tablets + qty[0]
+                new_days = new_tablets / qty[1]
+                
+                update_stock(med_name, new_tablets, new_days, qty[1], qty[2])
+                
+            st.success("Stock updated successfully! 🎉", icon = "🟢")
+    else:
+        st.info("No medicines selected for update.", icon = "ℹ️")
 
 with tab5:
     st.header("Skipped Medicines")
@@ -401,7 +408,6 @@ with tab5:
                 update_stock(med_name, new_tablets, new_days, current_dose, current_expiry)
                 
             st.success("Skipped doses added back to stock! 🎉", icon = "🟢")
-            st.rerun()
     else:
         st.info("No skipped medicines selected.", icon = "ℹ️")
 

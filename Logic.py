@@ -19,7 +19,7 @@ def add_med(med_name, med_tablets, med_dose, med_days, med_expiry):
 		with open("Med Stock.csv", "a") as f:
 			writer = csv.writer(f)
 			writer.writerow([(len(view_stock()) + 1), med_name, med_tablets, med_days, med_dose, med_expiry.strftime("%d-%m-%y")])
-			return True
+		return True
 	except Exception as e:
 		return f"Error adding the medicine: {e}"
 
